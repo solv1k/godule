@@ -1,0 +1,31 @@
+services:
+  pgsql:
+    image: 'postgres:17'
+    ports:
+      - '${FORWARD_DB_PORT:-5432}:5432'
+    environment:
+      PGPASSWORD: '${DB_PASSWORD:-secret}'
+      POSTGRES_DB: '${DB_NAME}'
+      POSTGRES_USER: '${DB_USERNAME}'
+      POSTGRES_PASSWORD: '${DB_PASSWORD:-secret}'
+    volumes:
+      - 'go-api-pgsql:/var/lib/postgresql/data'
+      - './docker/create-database.sql:/docker-entrypoint-initdb.d/10-create-database.sql'
+    healthcheck:
+      test:
+        - CMD
+        - pg_isready
+        - '-q'
+        - '-d'
+        - '${DB_NAME}'
+        - '-U'
+        - '${DB_USERNAME}'
+      retries: 3
+      timeout: 5s
+
+networks:
+  go-api-network:
+    driver: bridge
+volumes:
+  go-api-pgsql:
+    driver: local
