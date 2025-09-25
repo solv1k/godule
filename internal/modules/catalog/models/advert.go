@@ -29,6 +29,7 @@ type Advert struct {
 
 // Hook to set images collection before create advert
 func (a *Advert) BeforeCreate(tx *gorm.DB) error {
+	a.BaseModelWithTimestamps.BeforeCreate(tx)
 	if a.MainImage != nil {
 		a.MainImage.Collection = "main_image"
 	}

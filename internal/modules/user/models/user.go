@@ -21,6 +21,7 @@ type User struct {
 
 // Hook to set avatar collection before create user
 func (u *User) BeforeCreate(tx *gorm.DB) error {
+	u.BaseModelWithTimestamps.BeforeCreate(tx)
 	if u.Avatar != nil {
 		u.Avatar.Collection = "avatar"
 	}
