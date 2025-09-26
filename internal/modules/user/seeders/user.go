@@ -9,7 +9,7 @@ import (
 )
 
 // Generate fake users
-func Seed(db *gorm.DB, count int) error {
+func Run(db *gorm.DB, count int) error {
 	if count <= 0 {
 		return nil
 	}
