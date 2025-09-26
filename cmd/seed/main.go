@@ -7,7 +7,6 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/solv1k/croco-api/cmd/seed/seeders"
-	"github.com/solv1k/croco-api/database"
 )
 
 func main() {
@@ -15,12 +14,6 @@ func main() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
-	}
-
-	// Connecting to the database
-	db, err := database.Default()
-	if err != nil {
-		log.Fatal("Database connection failed: " + err.Error())
 	}
 
 	// Checking if the count argument is provided
@@ -39,7 +32,8 @@ func main() {
 	}
 
 	// Running the seeders
-	if err := seeders.Run(db, key, countInt); err != nil {
+	runner := seeders.NewRunner()
+	if err := runner.Run(key, countInt); err != nil {
 		log.Fatal("Seeding database failed: " + err.Error())
 	}
 }

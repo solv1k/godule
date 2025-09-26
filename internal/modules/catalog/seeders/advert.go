@@ -10,13 +10,23 @@ import (
 	"gorm.io/gorm"
 )
 
+type Seeder struct {
+	DB *gorm.DB
+}
+
+func New(db *gorm.DB) *Seeder {
+	return &Seeder{
+		DB: db,
+	}
+}
+
 // Generate fake adverts
-func Run(db *gorm.DB, count int) error {
+func (s *Seeder) Run(count int) error {
 	if count <= 0 {
 		return nil
 	}
 
-	tx := db.Begin()
+	tx := s.DB.Begin()
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()

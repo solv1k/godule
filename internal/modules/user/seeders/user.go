@@ -8,13 +8,25 @@ import (
 	"gorm.io/gorm"
 )
 
+// User seeder
+type Seeder struct {
+	DB *gorm.DB
+}
+
+// User seeder constructor
+func New(db *gorm.DB) *Seeder {
+	return &Seeder{
+		DB: db,
+	}
+}
+
 // Generate fake users
-func Run(db *gorm.DB, count int) error {
+func (s *Seeder) Run(count int) error {
 	if count <= 0 {
 		return nil
 	}
 
-	tx := db.Begin()
+	tx := s.DB.Begin()
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
