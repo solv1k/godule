@@ -4,6 +4,34 @@
 
 This package provides a modular API example built on top of [Fiber](https://github.com/gofiber/fiber) web framework for Go. The framework is designed to support modular architecture, allowing developers to easily create and manage separate API modules.
 
+- [Key features](#key-features)
+
+- [Core components](#core-components)
+
+- [Api struct](#api-struct)
+
+- [Config struct](#config-struct)
+
+- [Module interface](#module-interface)
+
+- [Implementing a new module](#implementing-a-new-module)
+
+- [Usage example](#usage-example)
+
+- [Database migrations](#database-migrations)
+
+- [Database seeding](#database-seeding)
+
+- [Configuration options](#configuration-options)
+
+- [Rate limiting](#rate-limiting)
+
+- [Versioning](#versioning)
+
+- [Error handling](#error-handling)
+
+- [License](#license)
+
 ## Key Features
 
 -   **Modular Architecture** — supports dynamic registration of API modules
@@ -52,7 +80,47 @@ Every module must implement the following methods:
 -   **Migrate()** — performs database migrations
     
 -   **Routes()** — registers API routes
+
+
+## Implementing a new module
+
+To create a new module, implement the `Module` interface and register it in the API configuration.
+
+```go
+    type Module struct {
+        // ...
+    }
+
+    // Register the module with all dependencies
+    func NewModule(db *gorm.DB) *MyModule {
+        return &Module{
+            // ...
+        }
+    }
     
+    func (m *Module) Name() string {
+        return "my_module"
+    }
+
+    func (m *Module) Description() string {
+        return "My Module"
+    }
+
+    func (m *Module) Version() string {
+        return "1.0.0"
+    }
+
+    func (m *Module) Migrate() error {
+        return m.DB.AutoMigrate(&FirstModel{}, &SecondModel{}) // Replace with your models
+    }
+
+    func (m *Module) Routes(app *fiber.App) {
+        moduleGroup := app.Group("/my_module")
+        moduleGroup.Get("/", m.Handler) // Replace with your handler
+    }
+}
+```
+
 
 ## Configuration Options
 
@@ -76,6 +144,7 @@ The API can be configured with the following parameters:
             mediaModule,
             userModule,
             catalogModule,
+            anotherAwesomeModule,
             ...
         },
     }
@@ -83,19 +152,46 @@ The API can be configured with the following parameters:
     // Initialize and run API
     app := api.New(config)
     app.Run(":3000")
+``` 
+
+## Database Migrations
+
+The framework supports automatic database migrations for all registered modules. To enable migrations, set the `AutoMigrate` field in the API configuration to `true`. This will automatically run migrations for all registered modules.
+
+Dont forget implementing `Migrate()` method in your module.
+
+## Database Seeding
+
+For seeding database you can use seeding console command.
+
+```bash
+go run cmd/seed/main.go [key] [count]
 ```
 
+The `key` parameter is the name of the seeder, and the `count` parameter is the number of records to create.
 
-## API Methods
+### Usage Example
 
--   **New()** — creates a new API server instance
-    
--   **Run()** — starts the server on the specified address
-    
--   **RunMigrations()** — executes migrations for all modules
-    
--   **initRoutes()** — initializes API routes
-    
+For example:
+
+```bash
+go run cmd/seed/main.go user 10
+```
+
+This command will create 10 users in the database.
+
+### Seeder Interface
+
+```go
+type Seeder interface {
+    Run(count int) error
+}
+```
+
+### Registering Seeders
+
+You can register new seeders by implementing the `Seeder` interface and registering them in `cmd/seed/seeders/registrator.go` inside the `Seeders()` method.
+
 
 ## Rate Limiting
 
@@ -108,10 +204,6 @@ The base route can be customized to support different API versions. By default, 
 ## Error Handling
 
 The framework provides basic error handling mechanisms. Custom error handling can be added to individual modules as required.
-
-## Extending the Framework
-
-To add new functionality, simply create a new module that implements the `Module` interface and register it in the API configuration.
 
 ## Environment Configuration
 
